@@ -59,14 +59,14 @@ $$
 
 ### 서명 검증
 <div align="center">
-<!-- <img src="docs/img/ecc_point1.png" width="50%"> -->
+<img src="docs/img/ecc_point1.png" width="50%">
 </div>
 타원곡선 암호학(ECC)에서, 곡선 상의 두 점 P와 Q를 잇는 직선은 항상 곡선과 한 점 R에서 추가로 교차한다. 그리고 이 점 R에 대해, 두 점의 합 P+Q는 R의 대칭점(곡선에 대해 R을 y축으로 반사한 점)으로 정의된다. 이 성질은 타원곡선 연산의 핵심으로, 덧셈과 스칼라 곱을 가능하게 한다.
 
 </br>
 
 <div align="center">
-<!-- <img src="docs/img/schnoor_ecc1.png" width="70%"> -->
+<img src="docs/img/schnoor_ecc1.png" width="70%">
 </div>
 
 $$
