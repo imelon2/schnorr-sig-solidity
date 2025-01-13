@@ -74,7 +74,8 @@ $$ sG = R + eP $$
 
 이러한 ECC의 성질을 이용하여, 서명 스키마를 타원 곡선상의 점으로 정의하면 위와 같은 공식을 유도할 수 있다. 그리고 해당 공식을 통해 생성된 슈노르 서명을 검증할 수 있다. 두 점 `R`, `eP`의 합의 대칭점을 `sG`로 정의하여, 해당 공식을 풀어 증명해보자
 
-$$ sG = (s_1+s_2)G = (k_1 + ed_1 + k_1 + ed_1)G = (k_1 + k_2)G + e(d_1 + d_2)G $$
+$$ sG = (s_1+s_2)G = (k_1 + ed_1 + k_1 + ed_1)G $$ 
+$$ = (k_1 + k_2)G + e(d_1 + d_2)G $$
 
 </br>
 
@@ -125,7 +126,7 @@ $$ Q = address(keccak256(P)) $$
 그리고, s를 구하는 공식을 위와 같이 재정의 하면 서명자의 공개키 `P`를 유도할 수 있다. 최종적으로 공개키를 keccak256로 해시한 값의 마지막 20 bytes를 서명자의 지갑 주소로 return한다.
 
 ## Verify schnorr signature with ecrecover(m,v,r,s)
-이제 schnorr 서명의 서명 스키마 `P`, `G`, `R`, `s` 4가지의 파라미터 `ecrecover(m,v,r,s)`를 활용하여 검증해볼 예정이다. 먼저, ecrecover의 4가지 파라미터를 schnorr 서명 스키마에서 정의한 값으로 재정의 해보자.
+이제 schnorr 서명의 4가지 서명 스키마 `P`, `G`, `R`, `s`를 `ecrecover(m,v,r,s)`함수의 파라미터에 대입하여 검증해볼 예정이다. 먼저, ecrecover의 4가지 파라미터를 schnorr 서명 스키마에서 정의한 값으로 재정의 해보자.
 - 공개키 P의 x-좌표: `r`
 - 공개키 P의 대칭성(parity = 1 || 0): `v`
 - -e * r: `s`
@@ -152,8 +153,6 @@ $$ P = sG - eP $$
 
 $$ R = sG - eP $$
 
-</br>
-
 $$ P = sG - eP $$
 
 최종적으로 return되는 값은 다르지만, 슈노르 서명의 검증 공식은 최종적으로 둘 다 동일한 것을 확인할 수 있다. 이제 프로토콜에서 서명 스키마에서 어떤 값을 검증하는지에 따라 검증하고자 하는 데이터가 달라지며, 아래와 같이 2가지 방법으로 서명 데이터를 검증할 수 있다.
@@ -170,9 +169,81 @@ $$ R = sG - eP $$
 $$ e' = hash(address(R)~||~m) $$
 $$ check~~e == e' $$
 
+> [!IMPORTANT]
+> 이더리움은 초기 **리플레이 공격(replay attack)**을 방지하기 위해 [EIP-155](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md)를 도입하여 트랜잭션 서명 메시지에 **체인 ID(chain id)**를 포함했다.
+> 또한, 온체인에서 메시지가 포함된 서명 데이터를 검증하는 [EIP-712](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md)는 동일한 서명이 재사용되지 않도록 스마트 컨트랙트에서 관리되는 nonce 값을 추가로 사용한다.
+> 이와 마찬가지로, **슈노르 서명(Schnorr Signature)**을 사용하는 경우에도 데이터를 보호하기 위한 장치를 반드시 구현할 것을 권장한다.
 
+## Verify schnorr signature on Solidity
 > [!NOTE]
-> [`Schnorr.sol`](contracts/Schnorr.sol) 코드는 2번째 검증 방법을 구현되었으니, 아래에서 다루는 내용에 대해 참고하자.
+> [`Schnorr.sol`](contracts/Schnorr.sol) 코드는 2번째 방식의 검증 로직이 구현되어 있다.
+
+```solidity
+//SPDX-License-Identifier: LGPLv3
+pragma solidity ^0.8.0;
+
+
+contract Schnorr {
+  // secp256k1 group order
+  uint256 constant public Q =
+    0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141;
+
+  // parity := public key y-coord parity (27 or 28)
+  // px := public key x-coord
+  // message := 32-byte message
+  // e := schnorr signature challenge
+  // s := schnorr signature
+  function verify(
+    uint8 parity,
+    bytes32 px,
+    bytes32 message,
+    bytes32 e,
+    bytes32 s
+  ) public pure returns (bool) {
+    bytes32 sp = bytes32(Q - mulmod(uint256(s), uint256(px), Q));
+    bytes32 ep = bytes32(Q - mulmod(uint256(e), uint256(px), Q));
+
+    require(sp != 0);
+    // the ecrecover precompile implementation checks that the `r` and `s`
+    // inputs are non-zero (in this case, `px` and `ep`), thus we don't need to
+    // check if they're zero.
+    address R = ecrecover(sp, parity, px, ep);
+    console.log(R);
+
+    require(R != address(0), "ecrecover failed");
+    return e == keccak256(
+      abi.encodePacked(R, uint8(parity), px, message)
+    );
+  }
+}
+```
+
+`verify()` 함수 내부를 살펴보면, `sp`와 `ep`를 계산하는 로직이 아래와 같이 스마트 컨트랙트에 구현되어 있다.
+
+```solidity
+bytes32 sp = bytes32(Q - mulmod(uint256(s), uint256(px), Q));
+bytes32 ep = bytes32(Q - mulmod(uint256(e), uint256(px), Q));
+```
+
+이 로직에는 두 가지 중요한 이유가 포함되어 있다.
+
+### Secp256k1 모듈러 연산
+ `mulmod(a,b,q)` 함수는 $a$ * $b$ $mod$ $q$ 연산을 수행한다. `sp`와 `ep`는 Secp256k1 타원 곡선 상의 점으로, **유한체(finite field) $Q$**에서 정의된 연산 규칙을 따라야 한다. 따라서 $mod$ $Q$가 적용된 모듈러 곱셈을 사용해야 정확한 값을 계산할 수 있다.
+
+### 모듈러 연산의 음수(-) 표현
+`sp`와 `ep`는 계산 과정에서 음수 값이 될 수 있다. 하지만, 유한체 기반 타원곡선에서는 음수를 직접적으로 사용할 수 없으므로, 음수 대신 덧셈의 역원을 이용해 이를 양수로 변환한다.
+
+sp와 ep는 *[Verify schnorr signature with ecrecover(m,v,r,s)](#verify-schnorr-signature-with-ecrecovermvrs)* 에서 설명했던것 처럼 음수(-)로 표현되어 있다. 하지만, 정수만 다루는 유한체(finite field) 기반 타원곡선에서는 음수를 직접적으로 사용할 수 없다. 대신 타원 곡선은 가역성(Invertibility)을 갖기에, 덧셈의 역원을 이용해 이를 양수로 변환한다. 이를 수식으로 표현하면 다음과 같다:
+
+$$ -a~mod~n = (n - a)~mod~n $$
+
+스마트 컨트랙트에서는 이를 구현하기 위해 mulmod(a, b, q) 계산 결과에서 $Q$를 뺌으로써 음수를 처리하고, 항상 양수 값으로 변환한다.
+
+
+## Run Test
+```
+npx hardhat test
+```
 
 ## References/notes
 - [How Schnorr signatures may improve Bitcoin](https://medium.com/cryptoadvance/how-schnorr-signatures-may-improve-bitcoin-91655bcb4744)
