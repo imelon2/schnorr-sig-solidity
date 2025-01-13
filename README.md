@@ -145,16 +145,13 @@ $$
 
 마찬가지로 먼저, 파라미터로 전달 받은 r과 v를 통해 점 P을 계산한다. 이때, P는 서명자들의 공개키를 합한 값($P_1$ + $P_2$ = $P$)이다.
 
-$$
-\because P = r^{-1}(sR - mG) \\
-\therefore mG =(-s * r)G \\
-\therefore sR = (-e * r)P \\ ~ \\
+$$\because P = r^{-1}(sR - mG)$$
+$$\therefore mG =(-s * r)G$$
+$$\therefore sR = (-e * r)P$$
 
-P = r^{-1}(srG - erP) \\ 
-P = sG - eP \\ ~ \\
+$$ P = r^{-1}(srG - erP) $$
+$$ P = sG - eP $$
 
-% Q = address(keccak256(P))
-$$
 
 위에서 설명했던것 처럼 슈노르 서명을 검증하는 공식은 $sG$ = $R$ + $eP$ 이며, 이를 재정의하면 아래와 같다.
 
