@@ -58,8 +58,6 @@ describe("Schnorr", () => {
     const s = secp256k1.privateKeyTweakAdd(s1, s2);
     console.log(`s:  ${Buffer.from(s).toString("hex")}`);
 
-    console.log(Pr[0] - 2 + 27);
-
     expect(
       await schnorr.verify(Pr[0] - 2 + 27, Pr.slice(1, 33), m, e, s)
     ).to.equal(true);
