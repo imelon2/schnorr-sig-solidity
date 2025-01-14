@@ -10,21 +10,17 @@ describe("Schnorr", () => {
     const schnorr = await Schnorr.deploy();
     await schnorr.waitForDeployment();
 
-    const PKstr1 =
-      "8c6c1bfa3a68833c54ac0c985038cd8b251096884d82df8e34f4a32beddec7bf"; // 0xaaa
-    const PKstr2 =
-      "8cfdf86c6171d23b7289c684711a69c63a1e8b3d4c210c36c4b27da034e3fc3f"; // 0xbbb
+    const PKstr1 = randomBytes(32) // Signer 1
+    const PKstr2 = randomBytes(32) // Signer 2
 
-    const PK1 = Uint8Array.from(Buffer.from(PKstr1, "hex"));
-    const PK2 = Uint8Array.from(Buffer.from(PKstr2, "hex"));
+    const PK1 = Uint8Array.from(PKstr1);
+    const PK2 = Uint8Array.from(PKstr2);
 
     const P1 = secp256k1.publicKeyCreate(PK1, false);
     const P2 = secp256k1.publicKeyCreate(PK2, false);
 
-    // console.log(`Steve Pub: ${Buffer.from(stevePub.slice(1,33)).toString('hex')}`);
     console.log(`P1: ${Buffer.from(P1).toString("hex")}`);
     console.log(`P2: ${Buffer.from(P2).toString("hex")}`);
-    // console.log(`Bob Pub: ${Buffer.from(bobPub.slice(1,33)).toString('hex')}`);
 
     const P = secp256k1.publicKeyCombine([P1, P2], false);
     const Pr = secp256k1.publicKeyConvert(P);

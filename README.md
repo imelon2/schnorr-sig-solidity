@@ -1,4 +1,4 @@
-# Schnorr verification contract by solidity
+# Verify schnorr signature on smart contract
 슈노르(이하 Schnorr) 서명은 비트코인과 이더리움에서 사용하는 ECDSA와 같이 타원곡선(Elliptic Curve Cryptography:ECC) 암호학 기반의 디지털 서명 방식중 하나이다. 하지만 다른 디지털 서명에 비해 연산이 간단해 더 빠르게 처리할 수 있으며, 선형성(linearity)을 갖는 알고리즘으로, 멀티서명(multi-signature)과 배치 검증(batch verification) 같은 기능을 지원할 수 있다.
 
 이더리움은 현재 타원곡선 암호학 중 Secp256k1을 사용하며, Schnorr 서명도 이와 호환 가능한 타원곡선이다. 하지만 이더리움은 Pre-Compiled Contract를 통해 스마트 컨트랙트에서 [ECDSA 서명 검증 함수(ecrecover)](https://docs.soliditylang.org/en/latest/cheatsheet.html#mathematical-and-cryptographic-functions)만을 지원한다. 이로 인해 슈노르 서명 검증 기능을 온체인에서 구현하는 데 여러 제약이 따른다. 그러나 [비탈릭 부테린이 제안한 방식](https://ethresear.ch/t/you-can-kinda-abuse-ecrecover-to-do-ecmul-in-secp256k1-today/2384/1)을 활용하면, Solidity에서 제공하는 `ecrecover(m, v, r, s)` 함수를 통해 슈노르 서명 검증에 필요한 기능을 충분히 구현할 수 있다. 
