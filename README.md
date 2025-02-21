@@ -13,7 +13,7 @@ Solidity의 [ECDSA 서명 검증 함수 `ecrecover(m, v, r, s)`](https://docs.so
 
 <br/>
 
-## [Schnorr.sol](./contracts/Schnorr.sol)
+## Schnorr.sol
 ```solidity
 //SPDX-License-Identifier: LGPLv3
 pragma solidity ^0.8.0;
