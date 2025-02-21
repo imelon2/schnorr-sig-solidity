@@ -3,7 +3,8 @@
 Solidity의 [ECDSA 서명 검증 함수 `ecrecover(m, v, r, s)`](https://docs.soliditylang.org/en/latest/cheatsheet.html#mathematical-and-cryptographic-functions)를 활용해 구현한 슈노스 서명 검증 함수를 소개합니다.
 
 > [!NOTE]
-> [`Schnorr.sol`](./contracts/Schnorr.sol)와 [`Schnorr.test.ts`](./test/Schnorr.test.ts)에 구현된 코드는 암호학적 개념이 다수 포함되어 있습니다. 코드를 리뷰하기전, [📚 Background reference](#-background-reference) 자료를 선행하기를 권장드립니다.
+> [`Schnorr.sol`](./contracts/Schnorr.sol)와 [`Schnorr.test.ts`](./test/Schnorr.test.ts)에 구현된 코드는 암호학적 개념이 다수 포함되어 있습니다. 코드를 리뷰하기전,
+> [📚 Background reference](#-background-reference) 자료를 선행하기를 권장드립니다.
 
 <br/>
 
